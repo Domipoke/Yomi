@@ -34,7 +34,7 @@ impl SettingsState {
     pub fn buildSettings(tx: tokio::sync::mpsc::UnboundedSender<MessageType>) -> Section {
         let tx_a = tx.clone();
         let tx_m = tx.clone();
-        let s = Section::new("Generali".to_owned(), Style::default())
+        let mut s = Section::new("Generali".to_owned(), Style::default())
         .add_item(Item {
             label: "Sorgente Anime predefinita".to_owned(),
             option: crate::components::ListOption::ItemOption::new_select_option(Box::new(|| {
@@ -43,7 +43,7 @@ impl SettingsState {
                 getSources("anime")
             }),Box::new(move |v| {
                 setAnimeSource(v.clone());
-                tx_a.send(MessageType::SettingsChange(ApplySettingsChange::setAnime(v)));
+                tx_a.send(MessageType::SettingsChange(ApplySettingsChange::SetAnime(v)));
                 true
             })),
         })
@@ -55,31 +55,32 @@ impl SettingsState {
                 getSources("manga")
             }),Box::new(move |v| {
                 setMangaSource(v.clone());
-                tx_m.send(MessageType::SettingsChange(ApplySettingsChange::setManga(v)));
+                tx_m.send(MessageType::SettingsChange(ApplySettingsChange::SetManga(v)));
                 true
             })),
-        })
-        .add_item(Item { label: "Device".to_owned(), option: crate::components::ListOption::ItemOption::new_select_option(Box::new(||{
-            if let Some(dev) = getDevice() {
-                return dev.name.to_owned()
-            }
-            "None".to_owned()
-        }), Box::new(  || {
-            let dev = getConfig().Device;
-            std::iter::once("None".to_string())
-                .chain(dev.iter().map(|x| x.name.clone()))
-                .collect()
-        }), Box::new(move |v| {
-            if (v.to_lowercase() == "none") {
-                setDevice(None);
-                return true;
-            } else if let Some(dev) = getConfig().Device.iter().find(|x| x.name==v) {
-                setDevice(Some(dev.clone()));
-                return true;
-            }
-            return false;
-        })) });
-        
+        });
+        if (cfg!(feature = "remote")) {
+            s=s.add_item(Item { label: "Device".to_owned(), option: crate::components::ListOption::ItemOption::new_select_option(Box::new(||{
+                if let Some(dev) = getDevice() {
+                    return dev.name.to_owned()
+                }
+                "None".to_owned()
+            }), Box::new(  || {
+                let dev = getConfig().Device;
+                std::iter::once("None".to_string())
+                    .chain(dev.iter().map(|x| x.name.clone()))
+                    .collect()
+            }), Box::new(move |v| {
+                if (v.to_lowercase() == "none") {
+                    setDevice(None);
+                    return true;
+                } else if let Some(dev) = getConfig().Device.iter().find(|x| x.name==v) {
+                    setDevice(Some(dev.clone()));
+                    return true;
+                }
+                return false;
+            })) });
+        }
         s
     }
     
@@ -92,7 +93,7 @@ impl SettingsState {
             option: crate::components::ListOption::ItemOption::new_color_picker(Box::new(|| {
                 return ColorPickerOption::default(); // TODO
             }), Box::new(move |c| {
-                tx_m.send(MessageType::SettingsChange(ApplySettingsChange::setColorTheme("example".to_owned(), c)));
+                tx_m.send(MessageType::SettingsChange(ApplySettingsChange::SetColorTheme("example".to_owned(), c)));
                 true
             })),
         });
@@ -136,8 +137,8 @@ impl StatefulWidget for Settings {
 
 
 pub enum ApplySettingsChange {
-    setManga(String),
-    setAnime(String),
-    setAppStatus(AppState),
-    setColorTheme(String, crate::utils::utils::ColorPickerOption)
+    SetManga(String),
+    SetAnime(String),
+    SetAppStatus(AppState),
+    SetColorTheme(String, crate::utils::utils::ColorPickerOption)
 }

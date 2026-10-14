@@ -154,14 +154,14 @@ impl App {
                         name: "Quit".to_owned(),
                         style: Some(ratatui::style::Style::default().bg(tailwind::RED.c300).white()), // White with c700
                         func: Box::new(move || {
-                            quit_tx_s.send(appmessages::MessageType::SettingsChange(ApplySettingsChange::setAppStatus(AppState::Quitting)));
+                            quit_tx_s.send(appmessages::MessageType::SettingsChange(ApplySettingsChange::SetAppStatus(AppState::Quitting)));
                         })
                     },
                     ListFuncOption {
                         name: "Stay".to_owned(),
                         style: Some(ratatui::style::Style::default().bg(tailwind::GREEN.c300).white()), // White with c700
                         func: Box::new(move || {
-                            stay_tx_s.send(MessageType::SettingsChange(ApplySettingsChange::setAppStatus(AppState::Running)));
+                            stay_tx_s.send(MessageType::SettingsChange(ApplySettingsChange::SetAppStatus(AppState::Running)));
                         })
                     }
                 ]
@@ -285,13 +285,13 @@ impl App {
             },
             Ok(MessageType::SettingsChange(a)) => {
                 match a {
-                    ApplySettingsChange::setAnime(a) => {
+                    ApplySettingsChange::SetAnime(a) => {
                         self.with_anime_source(&a);
                     },
-                    ApplySettingsChange::setManga(m) => {
+                    ApplySettingsChange::SetManga(m) => {
                         self.with_manga_source(&m);
                     }
-                    ApplySettingsChange::setAppStatus(app_state) => {
+                    ApplySettingsChange::SetAppStatus(app_state) => {
                         self.state = app_state
                     },
 

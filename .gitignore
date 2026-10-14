@@ -1,9 +1,14 @@
 .cargo
 /target
+/output
+
 /library
 /downloads
 /extensions
 
+
 debug.log
 log.txt
 config.toml
+
+build.sh

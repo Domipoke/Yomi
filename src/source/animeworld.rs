@@ -4,7 +4,7 @@ use std::{collections::HashMap, format, process::{Command, Stdio}};
 use reqwest::get;
 use scraper::{Html, Selector};
 
-use crate::{config::{getConfig, getDevice}, log, source::{AnimeSource, Episode, EpisodeListItem, SourceType}, utils::utils::AsyncError};
+use crate::{config::{getConfig, getDevice}, source::{AnimeSource, Episode, EpisodeListItem, SourceType}, utils::utils::AsyncError};
 
 pub struct Animeworld {
     url: String,
@@ -132,7 +132,6 @@ impl AnimeSource for Animeworld {
                     title: format!("Ep. {:>4}",ep.inner_html()),
                     url: alink.attr("href").unwrap_or("").trim().to_owned()
                 });
-                log!("{}", alink.attr("href").unwrap_or("").trim().to_owned());
             }
         }
         return Ok(hs);
@@ -140,7 +139,6 @@ impl AnimeSource for Animeworld {
     async fn lib_ep_select(&self, eli: EpisodeListItem) -> Result<(),  AsyncError> {
         if let Some(url) = Self::id_extract(&eli.url) {
             let mut player = getConfig().Anime.player.buildPlayer(getDevice());
-            log!("url: {}", url);
             if let Ok(vlc_url) =self.episode_play_url(url).await {
                 if !vlc_url.is_empty() {
                     let _ = player.play(&vlc_url);

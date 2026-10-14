@@ -8,7 +8,7 @@ use scraper::{Element, Html, Selector};
 use anyhow::{Context, Result};
 use zip::write::SimpleFileOptions;
 
-use crate::{log, source::{Episode, EpisodeListItem, MangaMetadata, MangaSource, SourceType}, utils::utils::{AsyncError, MangaCbz}};
+use crate::{source::{Episode, EpisodeListItem, MangaMetadata, MangaSource, SourceType}, utils::utils::{AsyncError, MangaCbz}};
 const UA: &str = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36";
 
 pub static MANGAGO_CLIENT: OnceLock<Client> = OnceLock::new();
@@ -224,14 +224,12 @@ impl MangaSource for Mangago {
         let cbz = MangaCbz::new(bp.clone(), false)?;
         let mut i:usize = 0;
         std::fs::create_dir_all(&bp)?;
-        log!("{}", images.join("\n"));
         for img in images {
             let mut h = Hasher::new();
             let png = get_client().get(img).send().await?.bytes().await?;
             h.update(&png); // TODO
             let hs= h.finalize();
             let b = cbz.has_page(i,hs);
-            log!("has page i={} b={}",i,b);
             if !b {
                 let image_path = format!("{}/{}.png",bp,i);
                 std::fs::File::create(&image_path)?;
@@ -940,8 +938,8 @@ pub mod claude_refactor_mangago_tachiyomi_extension {
     use once_cell::sync::Lazy;
     use regex::Regex;
     use reqwest::Client;
-
-use crate::log;
+    #[cfg(feature = "debug")]
+    use crate::log;
 
     // ── Third-party type provided by the caller ──────────────────────────────────
 
@@ -1261,7 +1259,10 @@ use crate::log;
         ) = {
             let document = scraper::Html::parse_document(html_str);
             let imgsrcs_script_inside = script_data_containing(&document, "imgsrcs")
-            .ok_or_else(|| {log!("could not find 'imgsrcs' script");anyhow!("could not find 'imgsrcs' script")})?;
+            .ok_or_else(|| {
+                #[cfg(feature = "debug")]
+                log!("could not find 'imgsrcs' script");anyhow!("could not find 'imgsrcs' script")
+            })?;
             
             // ── 1. Extract and base64-decode the encrypted image list ─────────────────
             let capforb64 = imgsrcs_script_inside.clone();
@@ -1270,12 +1271,18 @@ use crate::log;
                 .captures(&capforb64)
                 .and_then(|c| c.get(1))
                 .map(|m| m.as_str().to_owned())
-                .ok_or_else(|| {log!("imgrcs regex did not match");anyhow!("imgsrcs regex did not match")})?;
+                .ok_or_else(|| {
+                    #[cfg(feature = "debug")]
+                    log!("imgrcs regex did not match");anyhow!("imgsrcs regex did not match")
+                })?;
             let ciphertext_inside = B64.decode(&b64_payload_inside).context("base64 decode of imgsrcs failed")?;
             
             // ── 2. Fetch and deobfuscate chapter.js ───────────────────────────────────
             let chapter_js_rel_inside = script_src_containing(&document, "chapter.js")
-                .ok_or_else(|| {log!("chapter.js <script> not found");anyhow!("chapter.js <script> not found")})?;
+                .ok_or_else(|| {
+                    #[cfg(feature = "debug")]
+                    log!("chapter.js <script> not found");anyhow!("chapter.js <script> not found")
+                })?;
             // Resolve relative URL against the page origin.
             let base = url::Url::parse(page_url).context("invalid page_url")?;
             let chapter_js_url_inside = base

@@ -2,7 +2,10 @@ use std::{collections::HashMap, fs, path::Path, process::{Command, Stdio}, sync:
 
 use async_trait::async_trait;
 
-use crate::{config::getConfig, log, utils::utils::AsyncError};
+use crate::{config::getConfig, utils::utils::AsyncError};
+
+#[cfg(feature = "debug")]
+use crate::log;
 
 pub mod animeworld;
 pub mod mangaworld;
@@ -130,9 +133,7 @@ pub trait MangaSource: Send + Sync {
 
 pub fn openManga(so: Arc<Box<dyn MangaSource + Send + Sync>>, metadata: MangaMetadata) {
     let c = getConfig().Manga.reader;
-    log!("1");
     tokio::spawn(async move {
-        log!("2");
         if let Ok(imgs) = so.extract_pages_url(metadata.url.clone()).await {
             let path = match c {
                 crate::config::MangaReader::CBZ | crate::config::MangaReader::Sumatra | crate::config::MangaReader::CbzReader => {
@@ -144,7 +145,6 @@ pub fn openManga(so: Arc<Box<dyn MangaSource + Send + Sync>>, metadata: MangaMet
             };
             match path {
                 Err(k) => {
-                    log!("{}",k);
                     // ex.send(k); // TODO Send error string to a tx<string> 
                 },
                 Ok(s) => {

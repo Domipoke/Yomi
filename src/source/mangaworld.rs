@@ -4,7 +4,7 @@ use reqwest::get;
 use scraper::{ElementRef, Html, Selector};
 use zip::write::SimpleFileOptions;
 
-use crate::{log, source::{Episode, EpisodeListItem, MangaMetadata, MangaSource, SourceType, openManga}, utils::utils::{AsyncError, MangaCbz}};
+use crate::{source::{Episode, EpisodeListItem, MangaMetadata, MangaSource, SourceType, openManga}, utils::utils::{AsyncError, MangaCbz}};
 
 pub struct Mangaworld {
     url: String,
@@ -179,7 +179,7 @@ impl MangaSource  for Mangaworld {
             h.update(&png); // TODO
             let hs= h.finalize();
             let b = cbz.has_page(i,hs);
-            log!("has page i={} b={}",i,b);
+            // log!("has page i={} b={}",i,b);
             if !b {
                 let image_path = format!("{}/{}.png",bp,i);
                 std::fs::File::create(&image_path)?;

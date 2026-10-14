@@ -3,13 +3,13 @@ pub mod Player {
     #[cfg(feature = "remote")]
     use serde::ser::Error;
     #[cfg(feature = "remote")]
-    use std::{net::TcpStream, sync::{atomic::{AtomicBool, Ordering}, Arc}, mpsc::{self, Sender}, thread::{sleep, spawn}, time::Duration, format, io::{Read, Write}, path::Path };
+    use std::{net::TcpStream, sync::{atomic::{AtomicBool, Ordering}, Arc, mpsc::{self, Sender}}, thread::{sleep, spawn}, time::Duration, format, io::{Read, Write}, path::Path };
     #[cfg(feature = "remote")]
     use openssl::rand::{self, rand_bytes};
     #[cfg(feature = "remote")]
     use ssh2::Session;
 
-use crate::{config::DeviceSettings, log};
+use crate::{config::DeviceSettings};
     pub trait MangaPlayer {
         fn read();
     }
@@ -45,20 +45,23 @@ use crate::{config::DeviceSettings, log};
     }
     #[cfg(feature = "remote")]
     pub enum VlcrRemoteMessage {
-        quit,
-        add(String),
-        play,
+        Quit,
+        Add(String),
+        Play,
     }
     #[cfg(feature = "remote")]
     impl AnimePlayer for Vlcr {
         
         fn play(&mut self, url: &str) {
+            #[cfg(feature = "debug")]
             log!("play url: {}",url);
             if self.tx.is_none() {
+                #[cfg(feature = "debug")]
                 log!("Tx none so ssh");
                 match self.ssh() {
                     Ok(tx) => self.tx=Some(tx),
                     Err(err) => {
+                        #[cfg(feature = "debug")]
                         log!("Errore nella creazione di tx: {}", err);
                         return;
                     },
@@ -66,8 +69,8 @@ use crate::{config::DeviceSettings, log};
             }
 
             if let Some(tx) = &self.tx {
-                tx.send(VlcrRemoteMessage::add(url.to_owned()));
-                tx.send(VlcrRemoteMessage::play);
+                tx.send(VlcrRemoteMessage::Add(url.to_owned()));
+                tx.send(VlcrRemoteMessage::Play);
             }
         }
     }
@@ -115,19 +118,19 @@ use crate::{config::DeviceSettings, log};
                             //     }
                             // }
                             match cmd {
-                                VlcrRemoteMessage::quit => {
+                                VlcrRemoteMessage::Quit => {
                                     let _ = channel.write_all(b"quit\n");
                                     let _ = channel.flush();
                                     is_alive_worker.store(false, Ordering::Relaxed);
                                     break;
                                 }
-                                VlcrRemoteMessage::add(what) => {
+                                VlcrRemoteMessage::Add(what) => {
                                     let formatted = format!("add {}\n",what);
                                     if channel.write_all(formatted.as_bytes()).is_err() {
                                         is_alive_worker.store(false, Ordering::Relaxed);
                                     }
                                 }
-                                VlcrRemoteMessage::play => {
+                                VlcrRemoteMessage::Play => {
                                     let formatted = format!("play\n");
                                     if channel.write_all(formatted.as_bytes()).is_err() {
                                         is_alive_worker.store(false, Ordering::Relaxed);
@@ -170,6 +173,7 @@ use crate::{config::DeviceSettings, log};
                     let _ = channel.close();
                     let _ = channel.wait_close();
                 });
+                #[cfg(feature = "debug")]
                 log!("ssh return smt");
                 return Ok(tx);
             }

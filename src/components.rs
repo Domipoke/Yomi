@@ -333,7 +333,7 @@ pub mod Library {
 
     use ratatui::{buffer::Buffer, layout::{Alignment, Constraint, Layout, Rect}, style::Style, widgets::{Block, BorderType, Borders, List, ListItem, ListState, Paragraph, StatefulWidget, Widget}};
 
-    use crate::{appmessages::MessageType, library::{self, LibraryItem}, log, source::{EpisodeListItem, MangaSource}, utils::utils::hash_sort};
+    use crate::{appmessages::MessageType, library::{self, LibraryItem}, source::{EpisodeListItem, MangaSource}, utils::utils::hash_sort};
     pub struct Library {
         pub trasmitter_to_app:tokio::sync::mpsc::UnboundedSender<MessageType>,
         pub library_type: LibraryType
@@ -347,7 +347,6 @@ pub mod Library {
         } 
         pub fn sorted_keys_from_hash(hs: &HashMap<String, EpisodeListItem>) -> Vec<&String> {
             let mut items: Vec<&String> = hs.keys().collect::<Vec<&String>>();
-            // log!("{:#?}",items);
             items.sort_by(|ad: &&String,bd: &&String| {
                 let mut a_s = ad.split(".");
                 let a = a_s.nth(0).unwrap_or(ad);
@@ -588,7 +587,7 @@ pub mod AsyncUpdateMangaList {
 
     use ratatui::{buffer::Buffer, layout::Rect, style::{Style}, widgets::{Block, Borders, List, ListItem, ListState, Paragraph, StatefulWidget, Widget}};
 
-    use crate::{appmessages::MessageType, config::getConfig, log, source::MangaSource, utils::utils::{first_capital, hash_sort}};
+    use crate::{appmessages::MessageType, config::getConfig, source::MangaSource, utils::utils::{first_capital, hash_sort}};
 
     pub enum AsyncMangaStateStatus {
         Empty,
@@ -648,7 +647,6 @@ pub mod AsyncUpdateMangaList {
                     state.status = AsyncMangaStateStatus::Loading;
                     let tx = self.trasmitter_to_app.clone();
                     let source = state.mangasource.clone();
-                    log!("{}", source.get_url());
                     let h = source.get_hostname();
                     let p = state.page.clone();
                     tokio::spawn(async move {
@@ -698,7 +696,7 @@ pub mod ListOption {
     use boa_engine::ast::expression::Optional;
 use ratatui::{buffer::Buffer, crossterm::event::KeyCode, layout::{Constraint, Layout, Rect, Rows}, style::{Style}, symbols::line, text::{Line, Span, Text}, widgets::{Block, BorderType, List, StatefulWidget, Table, Widget}};
 
-    use crate::{components::TextInputState, config::getConfig, log, utils::utils::ColorPickerOption};
+    use crate::{components::TextInputState, config::getConfig, utils::utils::ColorPickerOption};
     pub struct ListOption {
         pub sections: Vec<Section>    
     }
@@ -1295,7 +1293,7 @@ impl TextInputState {
     }
 }
 pub mod Search {
-    use std::{collections::HashMap, hash::Hash, sync::Arc};
+    use std::{cmp::Ordering, collections::HashMap, hash::Hash, sync::Arc};
 
     use openssl::derive;
 use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::Style, text::Text, widgets::{Block, BorderType, Borders, List, ListItem, ListState, Paragraph, StatefulWidget, Widget, canvas::Label}};
@@ -1316,10 +1314,14 @@ use ratatui::{buffer::Buffer, layout::{Constraint, Layout, Rect}, style::Style, 
         pub fn sorted_keys_from_hash(hs: &HashMap<String, EpisodeListItem>) -> Vec<&String> {
             let mut items: Vec<&String> = hs.keys().collect::<Vec<&String>>();
             items.sort_by(|a: &&String,b: &&String| {
-                if let (Ok(ai),Ok(bi)) = (a.parse::<isize>(), b.parse::<isize>()) {
-                    return bi.cmp(&ai);
+                match (a.parse::<isize>(), b.parse::<isize>()) {
+                    (Ok(ai), Ok(bi)) => bi.cmp(&ai).then_with(|| b.cmp(a)),
+                    (Ok(_), Err(_)) => Ordering::Less,
+                    (Err(_), Ok(_)) => Ordering::Greater,
+                    (Err(_), Err(_)) => b.to_lowercase()
+                        .cmp(&a.to_lowercase())
+                        .then_with(|| b.cmp(a)),
                 }
-                return b.to_lowercase().cmp(&a.to_lowercase());
             }); // ? REVERSE SORT - MAX TO MIN -> NEWEST FIRST
             items
         }

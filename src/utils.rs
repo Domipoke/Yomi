@@ -27,15 +27,6 @@ use regex::Regex;
             }
         }};
     }
-
-
-    #[cfg(not(feature = "debug"))]
-    #[macro_export]
-    macro_rules! log {
-        ($($arg:tt)*) => {{
-            
-        }};
-    }
     /// Gemini checkpoint:
     /// define macro checkpoint in rust avaible only with cfg feature debug 
     /// that has a hashmap initialized only if cfg feature debug is active which map string, int. 
@@ -112,22 +103,6 @@ use regex::Regex;
     }
 
     // ==========================================
-    // When `feature = "debug"` is DISABLED
-    // ==========================================
-    #[cfg(not(feature = "debug"))]
-    pub mod debug_checkpoint {
-        use std::collections::HashMap;
-
-        /// No-op registry stub so calls like `debug_checkpoint::print_summary()`
-        /// or reading counts still compile without error.
-        pub fn print_summary() {}
-
-        pub fn get_counts() -> HashMap<String, usize> {
-            HashMap::new()
-        }
-    }
-
-    // ==========================================
     // Macro Definitions
     // ==========================================
     #[cfg(feature = "debug")]
@@ -141,15 +116,6 @@ use regex::Regex;
         };
     }
 
-    #[cfg(not(feature = "debug"))]
-    #[macro_export]
-    macro_rules! checkpoint {
-        // Consumes expressions without evaluating them or triggering unused-variable warnings
-        ($name:expr) => {
-            let _ = &$name;
-        };
-        () => {};
-    }
     #[cfg(feature = "debug")]
     #[macro_export]
     macro_rules! resetcheckpoint {
@@ -162,15 +128,6 @@ use regex::Regex;
         };
     }
 
-    #[cfg(not(feature = "debug"))]
-    #[macro_export]
-    macro_rules! resetcheckpoint {
-        // Consumes expressions without evaluating them or triggering unused-variable warnings
-        ($name:expr) => {
-            let _ = &$name;
-        };
-        () => {};
-    }
     ///
     pub static JS_FILTERS: &[&str] = &[
         "jQuery",
@@ -249,6 +206,7 @@ use regex::Regex;
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .status()?;
+            #[cfg(feature = "debug")]
             log!("{}",sta);
             Ok(())
         }   

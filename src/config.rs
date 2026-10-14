@@ -3,8 +3,9 @@ use ratatui::style::palette::tailwind;
 use serde::{Deserialize, Deserializer};
 use std::sync::OnceLock;
 
-use crate::{log, player::Player::{AnimePlayer, Vlc}, utils::utils::ColorPickerOption};
-
+use crate::{player::Player::{AnimePlayer, Vlc}, utils::utils::ColorPickerOption};
+#[cfg(feature = "debug")]
+use crate::log;
 #[cfg(feature = "remote")]
 use crate::player::Player::Vlcr;
 
@@ -16,6 +17,7 @@ pub struct Config {
     pub Manga: MangaSettings,
     pub Theme: ThemeSettings,
     pub General: GeneralSettings,
+    #[cfg(feature = "remote")]
     pub Device: Vec<DeviceSettings>
 }
 #[derive(Deserialize, Clone)]
@@ -36,6 +38,7 @@ pub struct AnimeSettings {
 #[derive(Deserialize, Clone)]
 pub struct GeneralSettings {
     pub askToQuit: bool,
+    #[cfg(feature = "remote")]
     pub defaultDevice: String
 }
 
@@ -99,6 +102,7 @@ fn manga_reader_deserialize<'de,D>(deserializer: D) -> Result<MangaReader, D::Er
         "calibre" => Ok(MangaReader::Calibre),
         "cbzreader" => Ok(MangaReader::CbzReader),
         _ => {
+            #[cfg(feature = "debug")]
             log!("Invalid manga reader, using default option: PDF");
             return Ok(MangaReader::PDF);
         }
@@ -111,6 +115,7 @@ fn anime_player_deserialize<'de,D>(deserializer: D) -> Result<AnimePlayerEnum, D
         #[cfg(feature = "remote")]
         "vlcr" => Ok(AnimePlayerEnum::VLCR),
         _ => {
+            #[cfg(feature = "debug")]
             log!("Invalid manga reader, using default option: PDF");
             return Ok(AnimePlayerEnum::VLC);
         }
@@ -148,6 +153,7 @@ pub fn getConfig() -> Config {
 pub fn load_config() -> Config {
     let content = fs::read_to_string("config.toml").expect("Can't read config file");
     let parsed:Config = toml::from_str(&content).unwrap();
+    #[cfg(feature = "remote")]
     if let Some(x) = parsed.Device.iter().find(|x| x.name == parsed.General.defaultDevice) {
         setDevice(Some(x.clone()));
     }
@@ -222,11 +228,13 @@ pub fn color_deserialize<'de,D>(deserializer: D) -> Result<Color, D::Error> wher
         Some(res)=>match u8::from_str_radix(res, 16){
             Ok(r) => r,
             Err(_) => {
+                #[cfg(feature = "debug")]
                 log!("Invalid hex color");
                 0
             },
         },
         None => {
+            #[cfg(feature = "debug")]
             log!("Invalid hex color");
             0
         }
@@ -235,11 +243,13 @@ pub fn color_deserialize<'de,D>(deserializer: D) -> Result<Color, D::Error> wher
         Some(res)=>match u8::from_str_radix(res, 16){
             Ok(r) => r,
             Err(_) => {
+                #[cfg(feature = "debug")]
                 log!("Invalid hex color");
                 0
             },
         },
         None => {
+            #[cfg(feature = "debug")]
             log!("Invalid hex color");
             0
         }
@@ -248,11 +258,13 @@ pub fn color_deserialize<'de,D>(deserializer: D) -> Result<Color, D::Error> wher
         Some(res)=>match u8::from_str_radix(res, 16){
             Ok(r) => r,
             Err(_) => {
+                #[cfg(feature = "debug")]
                 log!("Invalid hex color");
                 0
             },
         },
         None => {
+            #[cfg(feature = "debug")]
             log!("Invalid hex color");
             0
         }

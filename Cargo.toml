@@ -1,6 +1,6 @@
 [package]
-name = "Aniyomi"
-version = "0.1.0"
+name = "Yomi"
+version = "1.0.0"
 edition = "2024"
 
 [dependencies]
@@ -36,7 +36,19 @@ ssh2 = {version = "0.9.6", optional = true }
 
 
 [features]
-default = []
-remote  = []
+default = ["remote"]
+debug = []
+remote  = ["dep:ssh2"]
 full = ["default", "remote"]
 debugfull = ["full","remote"]
+
+[profile.dev]
+opt-level = 1
+
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
