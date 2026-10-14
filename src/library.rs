@@ -54,7 +54,7 @@ pub fn addToFavourite(kind: SourceType, what:&Episode, source: &String) {
                 if let Some(v) = data.get_mut(&ext.Info.Name) {
                     v.push(libitem);
                 } else {
-                    data.insert("addToFavourite".to_string(), vec![libitem]);
+                    data.insert("Favourites".to_string(), vec![libitem]);
                 }
                 if let Ok(s) = toml::to_string_pretty(&data) {
                     fs::write(format!("library/{}", toml), s);

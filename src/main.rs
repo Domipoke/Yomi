@@ -105,7 +105,7 @@ impl App {
         // let (tx_lm,     rx_lm)      = tokio::sync::mpsc::unbounded_channel::<HashMap<String, EpisodeListItem>>();
         // let (tx_lms,    rx_lms)     = tokio::sync::mpsc::unbounded_channel::<SearchStateStatus>();
         let anime_source:Arc<Box<dyn AnimeSource + Send + Sync + 'static>>      = Arc::new(Extension::defaultAnimeSource().unwrap_or(Box::new(animeworld::Animeworld::new("animeworld.ac".to_owned(), "https://animeworld.ac".to_owned())))); // TODO Make anime source selectable
-        let manga_source:Arc<Box<dyn MangaSource + Send + Sync + 'static>>      = Arc::new(Extension::defaultMangaeSource().unwrap_or(Box::new(mangaworld::Mangaworld::new("mangaworld.mx".to_owned(), "https://mangaworld.mx".to_owned())))); // TODO Make anime source selectable
+        let manga_source:Arc<Box<dyn MangaSource + Send + Sync + 'static>>      = Arc::new(Extension::defaultMangaSource().unwrap_or(Box::new(mangaworld::Mangaworld::new("mangaworld.mx".to_owned(), "https://mangaworld.mx".to_owned())))); // TODO Make anime source selectable
         let a_s = anime_source.clone();
         let m_s = manga_source.clone();
         // Asktoquit
@@ -988,6 +988,8 @@ impl App {
                                 if state.entry_selected {
                                     state.entry_selected = false;
                                     return true;
+                                } else if state.label.get_current().is_some() {
+                                    return state.label.clear();
                                 }
                                 false
                             }

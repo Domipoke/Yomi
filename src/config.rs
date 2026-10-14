@@ -3,7 +3,10 @@ use ratatui::style::palette::tailwind;
 use serde::{Deserialize, Deserializer};
 use std::sync::OnceLock;
 
-use crate::{log, player::Player::{AnimePlayer, Vlc, Vlcr}, utils::utils::ColorPickerOption};
+use crate::{log, player::Player::{AnimePlayer, Vlc}, utils::utils::ColorPickerOption};
+
+#[cfg(feature = "remote")]
+use crate::player::Player::Vlcr;
 
 
 
@@ -51,7 +54,9 @@ pub enum MangaReader {
 
 #[derive(Deserialize, Clone)]
 pub enum AnimePlayerEnum {
-    VLC, VLCR
+    VLC, 
+    #[cfg(feature = "remote")]
+    VLCR
 }
 impl MangaReader {
     pub fn to_str(&self) -> &str {
@@ -68,12 +73,14 @@ impl AnimePlayerEnum {
     pub fn to_str(&self) -> &str {
         match self {
             AnimePlayerEnum::VLC => "vlc",
+            #[cfg(feature = "remote")]
             AnimePlayerEnum::VLCR => "vlcr",
         }
     }
     pub fn buildPlayer(&self, selectedDevice: Option<DeviceSettings>) -> Box<dyn AnimePlayer + Send> {
         match self {
             AnimePlayerEnum::VLC => Box::new(Vlc {cmd: "vlc".to_owned(), args: vec![]}),
+            #[cfg(feature = "remote")]
             AnimePlayerEnum::VLCR => {
                 return Box::new(Vlcr {
                     dev: selectedDevice,
@@ -101,6 +108,7 @@ fn anime_player_deserialize<'de,D>(deserializer: D) -> Result<AnimePlayerEnum, D
     let s = String::deserialize(deserializer)?.to_lowercase();
     match s.as_str() {
         "vlc" => Ok(AnimePlayerEnum::VLC),
+        #[cfg(feature = "remote")]
         "vlcr" => Ok(AnimePlayerEnum::VLCR),
         _ => {
             log!("Invalid manga reader, using default option: PDF");

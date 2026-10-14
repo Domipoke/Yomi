@@ -1,13 +1,15 @@
 pub mod Player {
-    use std::{format, io::{Read, Write}, net::TcpStream, path::Path, process::{Command, Stdio}, sync::{Arc, atomic::{AtomicBool, Ordering}, mpsc::{self, Sender}}, thread::{sleep, spawn}, time::Duration};
-
-    use openssl::rand::{self, rand_bytes};
+    use std::{process::{Command, Stdio}};
+    #[cfg(feature = "remote")]
     use serde::ser::Error;
+    #[cfg(feature = "remote")]
+    use std::{net::TcpStream, sync::{atomic::{AtomicBool, Ordering}, Arc}, mpsc::{self, Sender}, thread::{sleep, spawn}, time::Duration, format, io::{Read, Write}, path::Path };
+    #[cfg(feature = "remote")]
+    use openssl::rand::{self, rand_bytes};
+    #[cfg(feature = "remote")]
     use ssh2::Session;
 
 use crate::{config::DeviceSettings, log};
-
-
     pub trait MangaPlayer {
         fn read();
     }
@@ -17,7 +19,8 @@ use crate::{config::DeviceSettings, log};
     pub trait LocalPlayer {
         fn exec();
     }
-    
+
+    #[cfg(feature = "remote")]
     pub trait RemotePlayer {
         fn initConnection();
         fn ssh(&self) -> Result<Sender<VlcrRemoteMessage>, Box<dyn std::error::Error>>;
@@ -35,16 +38,18 @@ use crate::{config::DeviceSettings, log};
                 .spawn();
         }
     }
-    
+    #[cfg(feature = "remote")]
     pub struct Vlcr {
         pub dev: Option<DeviceSettings>,
         pub tx: Option<Sender<VlcrRemoteMessage>>
     }
+    #[cfg(feature = "remote")]
     pub enum VlcrRemoteMessage {
         quit,
         add(String),
         play,
     }
+    #[cfg(feature = "remote")]
     impl AnimePlayer for Vlcr {
         
         fn play(&mut self, url: &str) {
@@ -66,6 +71,7 @@ use crate::{config::DeviceSettings, log};
             }
         }
     }
+    #[cfg(feature = "remote")]
     impl RemotePlayer for Vlcr {
         fn initConnection() {}
         fn ssh(&self) -> Result<Sender<VlcrRemoteMessage>, Box<dyn std::error::Error>> {

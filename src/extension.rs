@@ -83,7 +83,7 @@ impl Extension {
         }
         return Err(format!("No default file for {}",def));
     }
-    pub fn defaultMangaeSource() -> Result<Box<dyn MangaSource>, String> {
+    pub fn defaultMangaSource() -> Result<Box<dyn MangaSource>, String> {
         let def = &getConfig().Manga.source;
         if let Ok(ext) = Extension::buildfromName(SourceType::Manga, def) {
             return Ok(ext.toMangaSource());
