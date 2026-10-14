@@ -1,0 +1,40 @@
+[package]
+name = "Aniyomi"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+async-trait = "0.1.89"
+color-eyre = "0.6.5"
+curl = "0.4.49"
+ratatui = "0.30.0"
+reqwest = { version = "0.13.2", features = ["rustls","blocking", "cookies"] }
+scraper = "0.25.0"
+serde = { version = "1.0.228", features = ["derive"] }
+strum = { version = "0.28", default-features = false, features = ["derive"] }
+tokio =  { version = "1.50.0", features = ["full"] }
+toml = "1.0.4"
+openssl = { version = "0.10", features = ["vendored"] }
+zip = "8.5.0"
+crc32fast = "1.5.0"
+hex = "0.4.3"
+regex = "1.12.3"
+base64 = "0.22.1"
+rquickjs = "0.11.0"
+aes = "0.8"
+cbc = "0.1"
+block-padding = "0.3"
+anyhow = "1.0.102"
+cipher = { version = "0.5.1", features = ["block-padding"]}
+once_cell = "1.21.4"
+image = "0.25.10"
+boa_engine = "0.21.1"
+url = "2.5.8"
+rand = "0.10.3"
+ssh2 = "0.9.6"
+
+
+
+[features]
+default = ["debug"]
+debug  = []

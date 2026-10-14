@@ -1,0 +1,9 @@
+.cargo
+/target
+/library
+/downloads
+/extensions
+
+debug.log
+log.txt
+config.toml

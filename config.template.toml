@@ -1,0 +1,95 @@
+#   ├── Aniyomi
+#   ├── Aniyomi.exe
+#   ├── config.toml
+#   ├── downloads
+#   │   ├── anime
+#   │   └── manga
+#   ├── extensions
+#   │   ├── anime
+#   │   │   └── animeworld.toml
+#   │   └── manga
+#   │       ├── mangago.toml
+#   │       └── mangaworld.toml
+#   └── library
+#       ├── animelibrary.toml
+#       └── mangalibrary.toml
+
+##### ./config.toml
+[Anime]
+# Choosen between one of the avaible classes, must match with one of ./extensions/anime/*.toml
+source = "default_anime_source"
+# Avaible player are for now vlc and vlcr (remote, open a ssh to a trusted device to run a vlc instance.
+player = "vlc" 
+
+[Manga]
+# Choosen between one of the avaible classes, must match with one of ./extensions/manga/*.toml
+source = "default_manga_source"
+# Reader options are:
+# CbzReader -> To select a Reader by path or command.
+# pdf -> to download as pdf 
+# cbz -> to download as cbz
+reader = "CbzReader"
+#Define the path or command to the reader; Doesn't care if pdf or cbz are selected as |reader| option. 
+programCmd="zathura"
+programArg=""
+
+
+[General]
+# Add a AskToQuit advice
+askToQuit = false
+# If devices are defined, choose the default one
+defaultDevice = "MyRemotePc"
+
+# Devices are the remotes reader and are defined as:
+[[Device]]
+name = "MyRemotePc"
+user = "user"
+host = "192.168.3.3:22"
+key = "/path/to/.ssh/mysshkey"
+
+## W.I.P Define your personal theme.
+[Theme]
+base_border      =   "#fef3c7"
+anime_border     =   "#fef3c7"
+manga_border     =   "#fef3c7"
+menu_text       =   "#ffffff"
+menu_selection  =   "#fbbf24"
+res_border      =   "#fef3c7"
+res_text        =   "#ffffff"
+res_selection   =   "#fbbf24"
+cmd_text        =   "#ffffff"
+cmd_keys        =   "#7dcefe"
+status_loading  =   "#fef3c7"
+list_border     =   "#818cf8"
+
+
+
+
+
+##############################################################
+# ./extensions/[anime, manga]/{name}.toml
+
+# Anime or Manga
+Type = "Anime"
+
+[Info]
+Name = "Nome"
+Description = ""
+Language = "IT/it"
+
+[Sitemanager]
+# The hostname and the url to fetch. 
+# A cleaning refactor could remove one of this in the next future. 
+# This settings are good if site change only his hostname.
+Hostname = "mysite"
+Url = "https://mysite"
+
+
+##############################################################
+# Library are anime saved manually or by pressing special
+# keys to the favourites.
+[[Label]]
+name = "custom name or just the title"
+source = "/path/to/something"
+ext = "extension_to_use"
+
